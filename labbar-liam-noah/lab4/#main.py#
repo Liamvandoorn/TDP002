@@ -1,0 +1,66 @@
+import level as l
+import game as g
+
+def sokoban_display(level):
+    
+    height = 0 # Vi börjar vid 0 för att alltid justera höjd och bred till exakt det vi behöver på banan.
+    tiles = l.tile_locations(level, 'wall')
+    tiles += l.tile_locations(level, 'storage')
+
+    entities = l.entity_locations(level, 'player')
+    entities += l.entity_locations(level, 'crate')
+    
+    for tile in tiles:  # check height
+        if tile[1]+1 > height:
+            height = tile[1]+1
+
+    for row in range(height):
+        width = 0
+        tiles_to_print = []
+        entities_to_print = []
+
+        for tile in tiles:
+            if tile[1] == row:
+                tiles_to_print.append(tile)
+
+                if tile[0]+1 > width:
+                    width = tile[0]+1
+
+        for entity in entities:
+            if entity[1] == row:
+                entities_to_print.append(entity)
+
+        row_string =  ['floor']*width # Skapar en lista av mellanslag med längd som vi räknat ut. Kommer senare att konverteras till string
+        for tile in tiles_to_print: 
+            row_string[tile[0]] = check_tile(level, tile[0], tile[1])
+
+
+        for entity in entities_to_print:
+            if row_string[entity[0]] == 'storage':
+                row_string[entity[0]] = check_level(level, entity[0], entity[1])
+                
+
+def main():
+
+    level = l.create_level()
+    l.load_level(level, int(input('choose level:  ')))
+    print('')
+    player = g.find_player(level)
+
+    win = False
+    while (win == False):
+        l.display(level)
+        player_input = g.user_input()
+        if player_input == "give up":
+            break
+        
+        if g.player_can_move(level,player,player_input):
+            g.move_player(level,player,player_input)
+
+        win = g.win_condition(level)
+    if win == True:
+        l.display(level)
+        print('YOU WIN!')
+    else:
+        print('YOU ARE A "LOSER"!')
+main()
